@@ -23,7 +23,8 @@ Servo ESC;
 unsigned long t = 0;
 int pwm = NEUTRAL;
 int limitPwm = NEUTRAL;
-int ride = 0;
+int ride = false;
+int minus;
 
 void setup() {
   Serial.begin(57600); delay(10);
@@ -80,14 +81,16 @@ void loop() {
       newDataReady = 0;
       t = millis();
 
+      minus = a - b;
+
       if (a + b < 40 || a < 18 || b < 18) {
         pwm = NEUTRAL;
-        ride = 0;
-      } else if (abs(a - b) < RANGE && !ride) {
-        ride = 1;
-      } else if (abs(a - b) > RANGE && ride) {
-        pwm += a - b;
-        limitPwm = map(a - b, -40, 40, 1000, MAX_SPEED);
+        ride = false;
+      } else if (abs(minus) < RANGE && !ride) {
+        ride = true;
+      } else if (abs(minus) > RANGE && ride) {
+        pwm += minus;
+        limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
         if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
           pwm = limitPwm;
         }
