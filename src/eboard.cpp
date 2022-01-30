@@ -97,26 +97,7 @@ void loop() {
       }
       if (pwm < MIN_SPEED) pwm = MIN_SPEED;
       if (pwm > MAX_SPEED) pwm = MAX_SPEED;
-      ESC.write(pwm);
-      
+      ESC.writeMicroseconds(pwm);
     }
   }
-
-  // receive command from serial terminal, send 't' to initiate tare operation:
-  if (Serial.available() > 0) {
-    char inByte = Serial.read();
-    if (inByte == 't') {
-      LoadCell_1.tareNoDelay();
-      LoadCell_2.tareNoDelay();
-    }
-  }
-
-  //check if last tare operation is complete
-  if (LoadCell_1.getTareStatus()) {
-    Serial.println("Tare load cell 1 complete");
-  }
-  if (LoadCell_2.getTareStatus()) {
-    Serial.println("Tare load cell 2 complete");
-  }
-
 }
