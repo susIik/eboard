@@ -24,7 +24,7 @@ unsigned long t = 0;
 int pwm = NEUTRAL;
 int limitPwm = NEUTRAL;
 int ride = false;
-int minus;
+float minus;
 
 void setup() {
   Serial.begin(57600); delay(10);
