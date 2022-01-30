@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <HX711_ADC.h>
 #include <Servo.h>
 
@@ -110,10 +111,10 @@ void loop() {
   }
 
   //check if last tare operation is complete
-  if (LoadCell_1.getTareStatus() == true) {
+  if (LoadCell_1.getTareStatus()) {
     Serial.println("Tare load cell 1 complete");
   }
-  if (LoadCell_2.getTareStatus() == true) {
+  if (LoadCell_2.getTareStatus()) {
     Serial.println("Tare load cell 2 complete");
   }
 
