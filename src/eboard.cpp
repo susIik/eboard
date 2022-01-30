@@ -5,6 +5,7 @@
 #define MIN_SPEED 1500
 #define MAX_SPEED 2000
 #define NEUTRAL 1500
+#define RANGE 7
 
 //pins:
 const int HX711_dout_1 = 4; //mcu > HX711 no 1 dout pin
@@ -82,9 +83,9 @@ void loop() {
       if (a + b < 40 || a < 18 || b < 18) {
         pwm = NEUTRAL;
         ride = 0;
-      } else if (abs(a - b) < 5 && !ride) {
+      } else if (abs(a - b) < RANGE && !ride) {
         ride = 1;
-      } else if (abs(a - b) > 5 && ride) {
+      } else if (abs(a - b) > RANGE && ride) {
         pwm += a - b;
         limitPwm = map(a - b, -40, 40, 1000, MAX_SPEED);
         if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
