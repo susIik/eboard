@@ -7,11 +7,13 @@
 #define NEUTRAL 1500
 #define RANGE 7
 
-//pins:
-const int HX711_dout_1 = 4; //mcu > HX711 no 1 dout pin
-const int HX711_sck_1 = 5; //mcu > HX711 no 1 sck pin
-const int HX711_dout_2 = 6; //mcu > HX711 no 2 dout pin
-const int HX711_sck_2 = 7; //mcu > HX711 no 2 sck pin
+int CalculatePwm(float a, float b);
+
+//Pins setup
+const int HX711_dout_1 = 4;
+const int HX711_sck_1 = 5;
+const int HX711_dout_2 = 6;
+const int HX711_sck_2 = 7;
 
 //HX711 constructor (dout pin, sck pin)
 HX711_ADC LoadCell_1(HX711_dout_1, HX711_sck_1); //HX711 1
@@ -40,7 +42,7 @@ void setup() {
   LoadCell_1.begin();
   LoadCell_2.begin();
   
-  unsigned long stabilizingtime = 2000; // tare preciscion can be improved by adding a few seconds of stabilizing time
+  unsigned long stabilizingtime = 2000;
   boolean _tare = true;
   byte loadcell_1_rdy = 0;
   byte loadcell_2_rdy = 0;
@@ -49,20 +51,14 @@ void setup() {
     if (!loadcell_1_rdy) loadcell_1_rdy = LoadCell_1.startMultiple(stabilizingtime, _tare);
     if (!loadcell_2_rdy) loadcell_2_rdy = LoadCell_2.startMultiple(stabilizingtime, _tare);
   }
-  if (LoadCell_1.getTareTimeoutFlag()) {
-    Serial.println("Timeout, check MCU>HX711 no.1 wiring and pin designations");
-  }
-  if (LoadCell_2.getTareTimeoutFlag()) {
-    Serial.println("Timeout, check MCU>HX711 no.2 wiring and pin designations");
-  }
+
   LoadCell_1.setCalFactor(calibrationValue_1);
   LoadCell_2.setCalFactor(calibrationValue_2);
   Serial.println("Startup is complete");
 }
 
 void loop() {
-  static boolean newDataReady = 0;
-  const int serialPrintInterval = 0; //increase value to slow down serial print activity
+  static boolean newDataReady = false;
 
   // check for new data/start next conversion:
   if (LoadCell_1.update()) newDataReady = true;
@@ -70,7 +66,6 @@ void loop() {
 
   //get smoothed value from data set
   if ((newDataReady)) {
-    if (millis() > t + serialPrintInterval) {
       float a = LoadCell_1.getData();
       float b = LoadCell_2.getData();
       Serial.print("Load_cell 1 output val: ");
@@ -78,29 +73,39 @@ void loop() {
       Serial.print("    Load_cell 2 output val: ");
       Serial.println(b);
       Serial.println(pwm);
-      newDataReady = 0;
+      newDataReady = false;
       t = millis();
+      ESC.writeMicroseconds(CalculatePwm(a, b));
+  }
+}
 
-      minus = a - b;
 
-      if (a + b < 40 || a < 18 || b < 18) {
+/**
+ * @param a - first truck weight
+ * @param b - back truck weight
+ * @return PWM
+ */
+
+int CalculatePwm(float a, float b) {
+    minus = a - b;
+
+    if (a + b < 40 || a < 18 || b < 18) {
         pwm = NEUTRAL;
         ride = false;
-      } else if (abs(minus) < RANGE && !ride) {
+    } else if (abs(minus) < RANGE && !ride) {
         ride = true;
-      } else if (abs(minus) > RANGE && ride) {
+    } else if (abs(minus) > RANGE && ride) {
         pwm += minus;
         limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
         if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
-          pwm = limitPwm;
+            pwm = limitPwm;
         }
-      } else {
+    } else {
         if (pwm > NEUTRAL) pwm = int((pwm - NEUTRAL) * 0.95) + NEUTRAL;
         if (pwm < NEUTRAL) pwm = NEUTRAL - int((NEUTRAL - pwm) * 0.95);
-      }
-      if (pwm < MIN_SPEED) pwm = MIN_SPEED;
-      if (pwm > MAX_SPEED) pwm = MAX_SPEED;
-      ESC.writeMicroseconds(pwm);
     }
-  }
+    if (pwm < MIN_SPEED) pwm = MIN_SPEED;
+    if (pwm > MAX_SPEED) pwm = MAX_SPEED;
+
+    return pwm;
 }
