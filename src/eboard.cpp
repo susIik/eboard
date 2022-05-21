@@ -26,7 +26,7 @@ Servo ESC;
 float pwm = NEUTRAL;
 int limitPwm = NEUTRAL;
 int ride = false;
-float minus;
+float diff;
 
 void setup() {
   Serial.begin(57600); delay(10);
@@ -74,7 +74,7 @@ void loop() {
       //Serial.println(b);
       //Serial.println(pwm);
       newDataReady = false;
-      ESC.writeMicroseconds(CalculatePwm(a, b));
+      ESC.writeMicroseconds(NEUTRAL + 500 * CalcSpeed(a, b));
   }
 }
 
@@ -86,17 +86,16 @@ void loop() {
  */
 
 int CalculatePwm(float a, float b) {
-    minus = a - b;
+    diff = a - b;
 
     if (a + b < 40 || a < 18 || b < 18) {
         pwm = NEUTRAL;
         ride = false;
-    } else if (abs(minus) < RANGE && !ride) {
+    } else if (abs(diff) < RANGE && !ride) {
         ride = true;
-    } else if (abs(minus) > RANGE && ride) {
-<<<<<<< HEAD
-        pwm += minus * 0.05;
-        limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
+    } else if (abs(diff) > RANGE && ride) {
+        pwm += diff * 0.05;
+        limitPwm = map(diff, -40, 40, 1000, MAX_SPEED);
         if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
             pwm = limitPwm;
         }
@@ -108,25 +107,19 @@ int CalculatePwm(float a, float b) {
 }
 
 int CalcSpeed(float a, float b) {
-    minus = a - b;
+    diff = a - b;
 
     if (a + b < 40 || a < 18 || b < 18) {
-        pwm = NEUTRAL;
+        pwm = 0;
         ride = false;
-    } else if (abs(minus) < RANGE && !ride) {
+    } else if (abs(diff) < RANGE && !ride) {
         ride = true;
-    } else if (abs(minus) > RANGE && ride) {
-        pwm += minus * 0.05;
-=======
-        pwm += minus * 0.5;
->>>>>>> 2540fdfbe803a6ca11d91c08fa589c7eb39946ac
-        limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
-        if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
-            pwm = limitPwm;
+    } else if (abs(diff) > RANGE && ride) {
+        if (pwm < 0.1) {
+            pwm += 0.002 * pow(diff, 0);
+        } else {
+            pwm += diff * 0.001;
         }
     }
-    if (pwm < MIN_SPEED) pwm = MIN_SPEED;
-    if (pwm > MAX_SPEED) pwm = MAX_SPEED;
-
-    return pwm;
+    return min(1.0, max(pwm, 0.0));
 }
