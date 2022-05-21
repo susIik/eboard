@@ -8,6 +8,7 @@
 #define RANGE 7
 
 int CalculatePwm(float a, float b);
+int CalcSpeed(float a, float b);
 
 //Pins setup
 const int HX711_dout_1 = 4;
@@ -22,8 +23,7 @@ HX711_ADC LoadCell_2(HX711_dout_2, HX711_sck_2); //HX711 2
 //Servo setup
 Servo ESC;
 
-unsigned long t = 0;
-int pwm = NEUTRAL;
+float pwm = NEUTRAL;
 int limitPwm = NEUTRAL;
 int ride = false;
 float minus;
@@ -68,13 +68,12 @@ void loop() {
   if ((newDataReady)) {
       float a = LoadCell_1.getData();
       float b = LoadCell_2.getData();
-      Serial.print("Load_cell 1 output val: ");
-      Serial.print(a);
-      Serial.print("    Load_cell 2 output val: ");
-      Serial.println(b);
-      Serial.println(pwm);
+      //Serial.print("Load_cell 1 output val: ");
+      //Serial.print(a);
+      //Serial.print("    Load_cell 2 output val: ");
+      //Serial.println(b);
+      //Serial.println(pwm);
       newDataReady = false;
-      t = millis();
       ESC.writeMicroseconds(CalculatePwm(a, b));
   }
 }
@@ -95,14 +94,32 @@ int CalculatePwm(float a, float b) {
     } else if (abs(minus) < RANGE && !ride) {
         ride = true;
     } else if (abs(minus) > RANGE && ride) {
-        pwm += minus;
+        pwm += minus * 0.05;
         limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
         if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
             pwm = limitPwm;
         }
-    } else {
-        if (pwm > NEUTRAL) pwm = int((pwm - NEUTRAL) * 0.95) + NEUTRAL;
-        if (pwm < NEUTRAL) pwm = NEUTRAL - int((NEUTRAL - pwm) * 0.95);
+    }
+    if (pwm < MIN_SPEED) pwm = MIN_SPEED;
+    if (pwm > MAX_SPEED) pwm = MAX_SPEED;
+
+    return pwm;
+}
+
+int CalcSpeed(float a, float b) {
+    minus = a - b;
+
+    if (a + b < 40 || a < 18 || b < 18) {
+        pwm = NEUTRAL;
+        ride = false;
+    } else if (abs(minus) < RANGE && !ride) {
+        ride = true;
+    } else if (abs(minus) > RANGE && ride) {
+        pwm += minus * 0.05;
+        limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
+        if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
+            pwm = limitPwm;
+        }
     }
     if (pwm < MIN_SPEED) pwm = MIN_SPEED;
     if (pwm > MAX_SPEED) pwm = MAX_SPEED;
