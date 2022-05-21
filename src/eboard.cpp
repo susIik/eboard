@@ -94,6 +94,7 @@ int CalculatePwm(float a, float b) {
     } else if (abs(minus) < RANGE && !ride) {
         ride = true;
     } else if (abs(minus) > RANGE && ride) {
+<<<<<<< HEAD
         pwm += minus * 0.05;
         limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
         if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
@@ -116,6 +117,9 @@ int CalcSpeed(float a, float b) {
         ride = true;
     } else if (abs(minus) > RANGE && ride) {
         pwm += minus * 0.05;
+=======
+        pwm += minus * 0.5;
+>>>>>>> 2540fdfbe803a6ca11d91c08fa589c7eb39946ac
         limitPwm = map(minus, -40, 40, 1000, MAX_SPEED);
         if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
             pwm = limitPwm;
