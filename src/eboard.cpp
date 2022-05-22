@@ -116,7 +116,7 @@ int CalcSpeed(float a, float b) {
         ride = true;
     } else if (abs(diff) > RANGE && ride) {
         if (pwm < 0.1) {
-            pwm += 0.002 * pow(diff, 0);
+            pwm += 0.001 * pow(diff, 0);
         } else {
             pwm += diff * 0.001;
         }
