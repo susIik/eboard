@@ -8,7 +8,7 @@
 #define RANGE 7
 
 int CalculatePwm(float a, float b);
-int CalcSpeed(float a, float b);
+float CalcSpeed(float a, float b);
 
 //Pins setup
 const int HX711_dout_1 = 4;
@@ -72,9 +72,9 @@ void loop() {
       //Serial.print(a);
       //Serial.print("    Load_cell 2 output val: ");
       //Serial.println(b);
-      //Serial.println(pwm);
+      //Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
-      ESC.writeMicroseconds(NEUTRAL + 500 * CalcSpeed(a, b));
+      ESC.writeMicroseconds(int(NEUTRAL + 500 * CalcSpeed(a, b)));
   }
 }
 
@@ -106,7 +106,7 @@ int CalculatePwm(float a, float b) {
     return pwm;
 }
 
-int CalcSpeed(float a, float b) {
+float CalcSpeed(float a, float b) {
     diff = a - b;
 
     if (a + b < 40 || a < 18 || b < 18) {
@@ -115,11 +115,13 @@ int CalcSpeed(float a, float b) {
     } else if (abs(diff) < RANGE && !ride) {
         ride = true;
     } else if (abs(diff) > RANGE && ride) {
-        if (pwm < 0.1) {
-            pwm += 0.001 * pow(diff, 0);
+        if (pwm < 0.25 && diff > 0) {
+            pwm += 0.001;
+            pwm = max(0.15, pwm);
         } else {
-            pwm += diff * 0.001;
+            pwm += diff * 0.0005;
         }
     }
-    return min(1.0, max(pwm, 0.0));
+    pwm = min(1.0, max(pwm, 0.0));
+    return pwm;
 }
