@@ -4,10 +4,10 @@
 
 #define MIN_SPEED 1500
 #define MAX_SPEED 2000
+#define ADDITION 500
 #define NEUTRAL 1500
 #define RANGE 7
 
-int CalculatePwm(float a, float b);
 float CalcSpeed(float a, float b);
 
 //Pins setup
@@ -24,9 +24,7 @@ HX711_ADC LoadCell_2(HX711_dout_2, HX711_sck_2); //HX711 2
 Servo ESC;
 
 float pwm = NEUTRAL;
-int limitPwm = NEUTRAL;
 int ride = false;
-float diff;
 
 void setup() {
   Serial.begin(57600); delay(10);
@@ -74,7 +72,7 @@ void loop() {
       //Serial.println(b);
       //Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
-      ESC.writeMicroseconds(int(NEUTRAL + 500 * CalcSpeed(a, b)));
+      ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
   }
 }
 
@@ -85,29 +83,8 @@ void loop() {
  * @return PWM
  */
 
-int CalculatePwm(float a, float b) {
-    diff = a - b;
-
-    if (a + b < 40 || a < 18 || b < 18) {
-        pwm = NEUTRAL;
-        ride = false;
-    } else if (abs(diff) < RANGE && !ride) {
-        ride = true;
-    } else if (abs(diff) > RANGE && ride) {
-        pwm += diff * 0.05;
-        limitPwm = map(diff, -40, 40, 1000, MAX_SPEED);
-        if ((pwm > NEUTRAL && pwm > limitPwm) || (pwm < NEUTRAL && pwm < limitPwm)) {
-            pwm = limitPwm;
-        }
-    }
-    if (pwm < MIN_SPEED) pwm = MIN_SPEED;
-    if (pwm > MAX_SPEED) pwm = MAX_SPEED;
-
-    return pwm;
-}
-
 float CalcSpeed(float a, float b) {
-    diff = a - b;
+    float diff = a - b;
 
     if (a + b < 40 || a < 18 || b < 18) {
         pwm = 0;
@@ -115,9 +92,11 @@ float CalcSpeed(float a, float b) {
     } else if (abs(diff) < RANGE && !ride) {
         ride = true;
     } else if (abs(diff) > RANGE && ride) {
-        if (pwm < 0.25 && diff > 0) {
+        if (pwm < 0.18 && diff > 0) {
             pwm += 0.001;
             pwm = max(0.15, pwm);
+        } else if (pwm < 0.22 && diff > 0) {
+            pwm += 0.002;
         } else {
             pwm += diff * 0.0005;
         }
