@@ -87,6 +87,8 @@ float CalcSpeed(float a, float b) {
     float diff = a - b;
     float range = MIN_RANGE + 5 * pwm;
 
+    //Serial.println(range);
+
     if (a + b < 40 || a < 18 || b < 18) {
         pwm = 0;
         ride = false;
