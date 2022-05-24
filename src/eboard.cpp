@@ -6,7 +6,7 @@
 #define MAX_SPEED 2000
 #define ADDITION 500
 #define NEUTRAL 1500
-#define RANGE 7
+#define MIN_RANGE 7
 
 float CalcSpeed(float a, float b);
 
@@ -85,13 +85,14 @@ void loop() {
 
 float CalcSpeed(float a, float b) {
     float diff = a - b;
+    float range = MIN_RANGE + 5 * pwm;
 
     if (a + b < 40 || a < 18 || b < 18) {
         pwm = 0;
         ride = false;
-    } else if (abs(diff) < RANGE && !ride) {
+    } else if (abs(diff) < range && !ride) {
         ride = true;
-    } else if (abs(diff) > RANGE && ride) {
+    } else if (abs(diff) > range && ride) {
         if (pwm < 0.18 && diff > 0) {
             pwm += 0.001;
             pwm = max(0.15, pwm);
