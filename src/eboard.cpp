@@ -95,15 +95,18 @@ float CalcSpeed(float a, float b) {
     } else if (abs(diff) < range && !ride) {
         ride = true;
     } else if (abs(diff) > range && ride) {
-        if (pwm < 0.18 && diff > 0) {
+        if (pwm < 0.143 && diff > 0) {
+            pwm += 0.0005;
+            pwm = max(0.14, pwm);
+        } else if (pwm < 0.155 && diff > 0) {
             pwm += 0.001;
-            pwm = max(0.15, pwm);
-        } else if (pwm < 0.22 && diff > 0) {
-            pwm += 0.002;
+        } else if (pwm < 0.18 && diff > 0) {
+            pwm += 0.0025;
         } else {
             pwm += diff * 0.0005;
         }
     }
     pwm = min(1.0, max(pwm, 0.0));
+    
     return pwm;
 }
