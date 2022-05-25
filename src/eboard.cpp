@@ -102,6 +102,9 @@ float CalcSpeed(float a, float b) {
             pwm += 0.001;
         } else if (pwm < 0.18 && diff > 0) {
             pwm += 0.0025;
+        } else if (diff < -25) {
+            pwm = 0;
+            return -0.2;
         } else {
             pwm += diff * 0.0005;
         }
