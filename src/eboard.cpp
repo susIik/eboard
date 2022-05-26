@@ -2,8 +2,6 @@
 #include <HX711_ADC.h>
 #include <Servo.h>
 
-#define MIN_SPEED 1500
-#define MAX_SPEED 2000
 #define ADDITION 500
 #define NEUTRAL 1500
 #define MIN_RANGE 7
