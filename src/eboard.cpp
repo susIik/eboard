@@ -68,7 +68,7 @@ void loop() {
       //Serial.print(a);
       //Serial.print("    Load_cell 2 output val: ");
       //Serial.println(b);
-      //Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
+      Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
       ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
   }
@@ -93,18 +93,18 @@ float CalcSpeed(float a, float b) {
     } else if (abs(diff) < range && !ride) {
         ride = true;
     } else if (abs(diff) > range && ride) {
-        if (pwm < 0.143 && diff > 0) {
+        if (pwm < 0.135 && diff > 0) {
             pwm += 0.0005;
-            pwm = max(0.14, pwm);
-        } else if (pwm < 0.155 && diff > 0) {
+            pwm = max(0.13, pwm);
+        } else if (pwm < 0.15 && diff > 0) {
             pwm += 0.001;
-        } else if (pwm < 0.18 && diff > 0) {
+        } else if (pwm < 0.19 && diff > 0) {
             pwm += 0.0025;
         } else if (diff < -25) {
             pwm = 0;
-            return -0.2;
+            return -0.5;
         } else {
-            pwm += diff * 0.0005;
+            pwm += diff * 0.0002;
         }
     }
     pwm = min(1.0, max(pwm, 0.0));
