@@ -10,9 +10,9 @@ float CalcSpeed(float a, float b);
 
 //Pins setup
 const int HX711_dout_1 = 4;
-const int HX711_sck_1 = 5;
-const int HX711_dout_2 = 6;
-const int HX711_sck_2 = 7;
+const int HX711_sck_1 = 3;
+const int HX711_dout_2 = 11;
+const int HX711_sck_2 = 10;
 
 //HX711 constructor (dout pin, sck pin)
 HX711_ADC LoadCell_1(HX711_dout_1, HX711_sck_1); //HX711 1
@@ -29,10 +29,10 @@ void setup() {
   Serial.println();
   Serial.println("Starting...");
 
-  ESC.attach(3);
+  ESC.attach(9);
   ESC.writeMicroseconds(NEUTRAL);
 
-  float calibrationValue_1 = 18000.0;
+  float calibrationValue_1 = -18000.0;
   float calibrationValue_2 = 18000.0;
   
   LoadCell_1.begin();
@@ -64,10 +64,10 @@ void loop() {
   if ((newDataReady)) {
       float a = LoadCell_1.getData();
       float b = LoadCell_2.getData();
-      //Serial.print("Load_cell 1 output val: ");
-      //Serial.print(a);
-      //Serial.print("    Load_cell 2 output val: ");
-      //Serial.println(b);
+      Serial.print("Load_cell 1 output val: ");
+      Serial.print(a);
+      Serial.print("    Load_cell 2 output val: ");
+      Serial.println(b);
       Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
       ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
@@ -93,16 +93,16 @@ float CalcSpeed(float a, float b) {
     } else if (abs(diff) < range && !ride) {
         ride = true;
     } else if (abs(diff) > range && ride) {
-        if (pwm < 0.135 && diff > 0) {
+        if (pwm < 0.143 && diff > 0) {
             pwm += 0.0005;
-            pwm = max(0.13, pwm);
+            pwm = max(0.14, pwm);
         } else if (pwm < 0.15 && diff > 0) {
             pwm += 0.001;
         } else if (pwm < 0.19 && diff > 0) {
             pwm += 0.0025;
-        } else if (diff < -25) {
+        } else if (diff < -30) {
             pwm = 0;
-            return -0.5;
+            return -0.4;
         } else {
             pwm += diff * 0.0002;
         }
