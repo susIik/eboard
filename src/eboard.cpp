@@ -1,12 +1,17 @@
 #include <Arduino.h>
 #include <HX711_ADC.h>
 #include <Servo.h>
+#include <VescUart.h>
+#include <SoftwareSerial.h>
 
 #define ADDITION 500
 #define NEUTRAL 1500
 #define MIN_RANGE 7
+#define MIN_WEIGHT 40
+#define MIN_WEIGHT_SINGLE 18
 
 float CalcSpeed(float a, float b);
+float GetSpeed();
 
 //Pins setup
 const int HX711_dout_1 = 4;
@@ -21,6 +26,13 @@ HX711_ADC LoadCell_2(HX711_dout_2, HX711_sck_2); //HX711 2
 //Servo setup
 Servo ESC;
 
+//UART setup
+VescUart vesc;
+
+//Extra serial setup (for debugging)
+SoftwareSerial vescSerial(7, 6);
+
+//Global variables
 float pwm = NEUTRAL;
 int ride = false;
 
@@ -28,6 +40,9 @@ void setup() {
   Serial.begin(57600); delay(10);
   Serial.println();
   Serial.println("Starting...");
+
+  vescSerial.begin(4800);
+  vesc.setSerialPort(&vescSerial);
 
   ESC.attach(9);
   ESC.writeMicroseconds(NEUTRAL);
@@ -43,7 +58,7 @@ void setup() {
   byte loadcell_1_rdy = 0;
   byte loadcell_2_rdy = 0;
   
-  while ((loadcell_1_rdy + loadcell_2_rdy) < 2) { //run startup, stabilization and tare, both modules simultaniously
+  while ((loadcell_1_rdy + loadcell_2_rdy) < 2) {
     if (!loadcell_1_rdy) loadcell_1_rdy = LoadCell_1.startMultiple(stabilizingtime, _tare);
     if (!loadcell_2_rdy) loadcell_2_rdy = LoadCell_2.startMultiple(stabilizingtime, _tare);
   }
@@ -64,11 +79,11 @@ void loop() {
   if ((newDataReady)) {
       float a = LoadCell_1.getData();
       float b = LoadCell_2.getData();
-      Serial.print("Load_cell 1 output val: ");
-      Serial.print(a);
-      Serial.print("    Load_cell 2 output val: ");
-      Serial.println(b);
-      Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
+      //Serial.print("Load_cell 1 output val: ");
+      //Serial.print(a);
+      //Serial.print("    Load_cell 2 output val: ");
+      //Serial.println(b);
+      //Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
       ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
   }
@@ -87,7 +102,7 @@ float CalcSpeed(float a, float b) {
 
     //Serial.println(range);
 
-    if (a + b < 40 || a < 18 || b < 18) {
+    if (a + b < MIN_WEIGHT || a < MIN_WEIGHT_SINGLE || b < MIN_WEIGHT_SINGLE) {
         pwm = 0;
         ride = false;
     } else if (abs(diff) < range && !ride) {
@@ -110,4 +125,16 @@ float CalcSpeed(float a, float b) {
     pwm = min(1.0, max(pwm, 0.0));
     
     return pwm;
+}
+
+
+/**
+ * @return Motor rpm
+ */
+
+float GetSpeed() {
+    if (vesc.getVescValues()) {
+        return vesc.data.rpm / 7 * 20 / 56;
+    }
+    return 0;
 }
