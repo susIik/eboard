@@ -11,7 +11,8 @@
 #define MIN_WEIGHT_SINGLE 18
 
 float CalcSpeed(float a, float b);
-float GetSpeed();
+float GetAdjustedSpeed();
+float SpeedValue(float diff);
 
 //Pins setup
 const int HX711_dout_1 = 4;
@@ -108,19 +109,7 @@ float CalcSpeed(float a, float b) {
     } else if (abs(diff) < range && !ride) {
         ride = true;
     } else if (abs(diff) > range && ride) {
-        if (pwm < 0.143 && diff > 0) {
-            pwm += 0.0005;
-            pwm = max(0.14, pwm);
-        } else if (pwm < 0.15 && diff > 0) {
-            pwm += 0.001;
-        } else if (pwm < 0.19 && diff > 0) {
-            pwm += 0.0025;
-        } else if (diff < -30) {
-            pwm = 0;
-            return -0.4;
-        } else {
-            pwm += diff * 0.0002;
-        }
+        pwm = SpeedValue(diff);
     }
     pwm = min(1.0, max(pwm, 0.0));
     
@@ -132,9 +121,34 @@ float CalcSpeed(float a, float b) {
  * @return Motor rpm
  */
 
-float GetSpeed() {
+float GetAdjustedSpeed() {
     if (vesc.getVescValues()) {
-        return vesc.data.rpm / 7 * 20 / 56;
+        return 0.0001 * vesc.data.rpm / 7 * 20 / 56;
     }
     return 0;
+}
+
+
+/**
+ * @param diff - weight difference between trucks
+ * @return PWM
+ */
+
+float SpeedValue(float diff) {
+    if (pwm < 0.143 && diff > 0) {
+            pwm += 0.0005 + GetAdjustedSpeed();
+            pwm = max(0.14, pwm);
+        } else if (pwm < 0.15 && diff > 0) {
+            pwm += 0.001;
+        } else if (pwm < 0.19 && diff > 0) {
+            pwm += 0.0025;
+        } else if (diff < -30) {
+            pwm = 0;
+            return -1;
+        } else if (diff < -20) {
+            pwm = 0;
+            return -0.5;
+        } else {
+            pwm += diff * 0.0002;
+        }
 }
