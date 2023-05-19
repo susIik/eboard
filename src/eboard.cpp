@@ -34,7 +34,7 @@ VescUart vesc;
 SoftwareSerial vescSerial(7, 6);
 
 //Global variables
-float pwm = NEUTRAL;
+float pwm = 0;
 int ride = false;
 
 void setup() {
@@ -87,7 +87,6 @@ void loop() {
       Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
       //ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
-      ESC.writeMicroseconds(NEUTRAL);
   }
 }
 
@@ -101,6 +100,7 @@ void loop() {
 float CalcSpeed(float a, float b) {
     float diff = a - b;
     float range = MIN_RANGE + 5 * pwm;
+    float stop;
 
     //Serial.println(range);
 
@@ -111,6 +111,11 @@ float CalcSpeed(float a, float b) {
         ride = true;
     } else if (abs(diff) > range && ride) {
         pwm = SpeedValue(diff);
+        if (pwm < 0) {
+            stop = pwm;
+            pwm = 0;
+            return stop;
+        }
     }
     pwm = min(1.0, max(pwm, 0.0));
     
@@ -124,7 +129,7 @@ float CalcSpeed(float a, float b) {
 
 float GetAdjustedSpeed() {
     if (vesc.getVescValues()) {
-        return 0.0001 * vesc.data.rpm / 7 * 20 / 56;
+        return 0.0001 * vesc.data.rpm / 7 * 20 / 60;
     }
     return 0;
 }
@@ -136,12 +141,12 @@ float GetAdjustedSpeed() {
  */
 
 float SpeedValue(float diff) {
-    if (pwm < 0.143 && diff > 0) {
-            pwm += 0.0005 + GetAdjustedSpeed();
-            pwm = max(0.14, pwm);
-        } else if (pwm < 0.15 && diff > 0) {
+    if (pwm < 0.123 && diff > 0) {
+            pwm += 0.0005; //+ GetAdjustedSpeed();
+            pwm = max(0.12, pwm);
+        } else if (pwm < 0.13 && diff > 0) {
             pwm += 0.001;
-        } else if (pwm < 0.19 && diff > 0) {
+        } else if (pwm < 0.17 && diff > 0) {
             pwm += 0.0025;
         } else if (diff < -30) {
             pwm = 0;
@@ -152,4 +157,6 @@ float SpeedValue(float diff) {
         } else {
             pwm += diff * 0.0002;
         }
+
+    return pwm;
 }
