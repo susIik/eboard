@@ -80,13 +80,14 @@ void loop() {
   if ((newDataReady)) {
       float a = LoadCell_1.getData();
       float b = LoadCell_2.getData();
-      //Serial.print("Load_cell 1 output val: ");
-      //Serial.print(a);
-      //Serial.print("    Load_cell 2 output val: ");
-      //Serial.println(b);
-      //Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
+      Serial.print("Load_cell 1 output val: ");
+      Serial.print(a);
+      Serial.print("    Load_cell 2 output val: ");
+      Serial.println(b);
+      Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
-      ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
+      //ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
+      ESC.writeMicroseconds(NEUTRAL);
   }
 }
 
