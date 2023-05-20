@@ -141,12 +141,12 @@ float GetAdjustedSpeed() {
  */
 
 float SpeedValue(float diff) {
-    if (pwm < 0.123 && diff > 0) {
+    if (pwm < 0.133 && diff > 0) {
             pwm += 0.0005; //+ GetAdjustedSpeed();
             pwm = max(0.12, pwm);
-        } else if (pwm < 0.13 && diff > 0) {
+        } else if (pwm < 0.14 && diff > 0) {
             pwm += 0.001;
-        } else if (pwm < 0.17 && diff > 0) {
+        } else if (pwm < 0.18 && diff > 0) {
             pwm += 0.0025;
         } else if (diff < -30) {
             pwm = 0;
