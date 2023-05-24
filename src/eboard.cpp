@@ -8,7 +8,7 @@
 #define NEUTRAL 1500
 #define MIN_RANGE 7
 #define MIN_WEIGHT 40
-#define MIN_WEIGHT_SINGLE 18
+#define MIN_WEIGHT_SINGLE 15
 
 float CalcSpeed(float a, float b);
 float GetAdjustedSpeed();
@@ -99,7 +99,7 @@ void loop() {
 
 float CalcSpeed(float a, float b) {
     float diff = a - b;
-    float range = MIN_RANGE + 5 * pwm;
+    float range = MIN_RANGE + 3 * pwm;
     float stop;
 
     //Serial.println(range);
@@ -149,9 +149,6 @@ float SpeedValue(float diff) {
         } else if (pwm < 0.29 && diff > 0) {
             pwm += 0.0025;
         } else if (diff < -30) {
-            pwm = 0;
-            return -1;
-        } else if (diff < -20) {
             pwm = 0;
             return -0.5;
         } else {
