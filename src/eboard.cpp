@@ -31,19 +31,19 @@ Servo ESC;
 VescUart vesc;
 
 //Extra serial setup (for debugging)
-SoftwareSerial vescSerial(7, 6);
+//SoftwareSerial vescSerial(7, 6);
 
 //Global variables
 float pwm = 0;
 int ride = false;
 
 void setup() {
-  Serial.begin(57600); delay(10);
-  Serial.println();
-  Serial.println("Starting...");
+  Serial.begin(4800);
+  //Serial.println();
+  //Serial.println("Starting...");
 
-  vescSerial.begin(4800);
-  vesc.setSerialPort(&vescSerial);
+  //vescSerial.begin(4800);
+  vesc.setSerialPort(&Serial);
 
   ESC.attach(9);
   ESC.writeMicroseconds(NEUTRAL);
@@ -66,7 +66,7 @@ void setup() {
 
   LoadCell_1.setCalFactor(calibrationValue_1);
   LoadCell_2.setCalFactor(calibrationValue_2);
-  Serial.println("Startup is complete");
+  //Serial.println("Startup is complete");
 }
 
 void loop() {
@@ -141,12 +141,12 @@ float GetAdjustedSpeed() {
  */
 
 float SpeedValue(float diff) {
-    if (pwm < 0.263 && diff > 0) {
-            pwm += 0.0005; //+ GetAdjustedSpeed();
-            pwm = max(0.26, pwm);
-        } else if (pwm < 0.27 && diff > 0) {
+    if (pwm < 0.253 && diff > 0) {
+            pwm += 0.0005 + GetAdjustedSpeed();
+            pwm = max(0.25, pwm);
+        } else if (pwm < 0.26 && diff > 0) {
             pwm += 0.001;
-        } else if (pwm < 0.29 && diff > 0) {
+        } else if (pwm < 0.28 && diff > 0) {
             pwm += 0.0025;
         } else if (diff < -30) {
             pwm = 0;
