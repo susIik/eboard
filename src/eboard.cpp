@@ -30,19 +30,12 @@ Servo ESC;
 //UART setup
 VescUart vesc;
 
-//Extra serial setup (for debugging)
-//SoftwareSerial vescSerial(7, 6);
-
 //Global variables
 float pwm = 0;
 int ride = false;
 
 void setup() {
   Serial.begin(4800);
-  //Serial.println();
-  //Serial.println("Starting...");
-
-  //vescSerial.begin(4800);
   vesc.setSerialPort(&Serial);
 
   ESC.attach(9);
@@ -66,7 +59,6 @@ void setup() {
 
   LoadCell_1.setCalFactor(calibrationValue_1);
   LoadCell_2.setCalFactor(calibrationValue_2);
-  //Serial.println("Startup is complete");
 }
 
 void loop() {
@@ -76,15 +68,9 @@ void loop() {
   if (LoadCell_1.update()) newDataReady = true;
   LoadCell_2.update();
 
-  //get smoothed value from data set
   if ((newDataReady)) {
       float a = LoadCell_1.getData();
       float b = LoadCell_2.getData();
-      //Serial.print("Load_cell 1 output val: ");
-      //Serial.print(a);
-      //Serial.print("    Load_cell 2 output val: ");
-      //Serial.println(b);
-      //Serial.println(int(NEUTRAL + 500 * CalcSpeed(a, b)));
       newDataReady = false;
       ESC.writeMicroseconds(int(NEUTRAL + ADDITION * CalcSpeed(a, b)));
   }
@@ -101,8 +87,6 @@ float CalcSpeed(float a, float b) {
     float diff = a - b;
     float range = MIN_RANGE + 3 * pwm;
     float stop;
-
-    //Serial.println(range);
 
     if (a + b < MIN_WEIGHT || a < MIN_WEIGHT_SINGLE || b < MIN_WEIGHT_SINGLE) {
         pwm = 0;
@@ -124,7 +108,7 @@ float CalcSpeed(float a, float b) {
 
 
 /**
- * @return Motor rpm
+ * @return Motor rpm times constant
  */
 
 float GetAdjustedSpeed() {
